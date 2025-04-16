@@ -41,7 +41,7 @@ public:
         std::cout << "--->" << __FUNCTION__ << std::endl;
         pj::CallOpParam param(false);
         call = std::make_unique<pj::Call>(acc, -1);
-        std::string destination = "sip:" + username + domain;
+        std::string destination = "sip:" + username + "@" + domain;
         call->makeCall(destination, param);
         std::cout << "<---" << __FUNCTION__ << std::endl;
     }
@@ -61,6 +61,11 @@ private:
         pj::EpConfig ep_cfg;
         ep.libCreate();
         ep.libInit(ep_cfg);
+
+        pj::TransportConfig tcfg;
+        tcfg.port = 5060;
+        ep.transportCreate(PJSIP_TRANSPORT_UDP, tcfg);
+
         ep.libStart();
         // hanleAud();
     }
@@ -94,9 +99,9 @@ private:
 int main() {
     SIPC c;
 
-    c.registerAccount("1004", "1004", "192.168.10.51:5060");
+    c.registerAccount("1003", "1003", "192.168.10.51:5060");
 
-    c.makeCall("another_user", "sip.example.com");
+    c.makeCall("1000", "192.168.10.51:5060");
 
     std::cin.get();
 
