@@ -6,9 +6,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PJPROJECT_DIR /usr/local)
 
+include_directories(${PROJECT_SOURCE_DIR})
+
 link_directories(/usr/local/lib)
 
-add_executable(voip voip.cpp)
+add_executable(voip 
+    # voip.cpp 
+    # vcall.cc
+    main.cc
+)
 
 target_link_libraries(voip
     pjsua2-x86_64-pc-linux-gnu 
@@ -44,8 +50,6 @@ target_link_libraries(voip
     rt 
     pthread  
     asound 
-    /usr/lib 
-    SDL2  
     avdevice 
     avformat 
     avcodec 

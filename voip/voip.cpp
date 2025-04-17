@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <memory>
+#include <pjsua2/media.hpp>
+
+#include "vcall.h"
 
 class SIPC {
 public:
@@ -40,7 +43,7 @@ public:
     ) {
         std::cout << "--->" << __FUNCTION__ << std::endl;
         pj::CallOpParam param(false);
-        call = std::make_unique<pj::Call>(acc, -1);
+        call = std::make_unique<voip::VCall>(acc, -1);
         std::string destination = "sip:" + username + "@" + domain;
         call->makeCall(destination, param);
         std::cout << "<---" << __FUNCTION__ << std::endl;
@@ -63,7 +66,7 @@ private:
         ep.libInit(ep_cfg);
 
         pj::TransportConfig tcfg;
-        tcfg.port = 5060;
+        tcfg.port = 50601;
         ep.transportCreate(PJSIP_TRANSPORT_UDP, tcfg);
 
         ep.libStart();
@@ -82,18 +85,17 @@ private:
         ep.libDestroy();
     }
 
-    void onIncomingCall(pj::Call &call) {
-        std::cout << "--->" << __FUNCTION__ << std::endl;
-        std::cout << __FUNCTION__ << std::endl;
-        pj::CallOpParam param(false);
-        call.answer(param);
-        std::cout << "<---" << __FUNCTION__ << std::endl;
-    }
+    // void onIncomingCall(pj::Call &call) {
+    //     std::cout << "--->" << __FUNCTION__ << std::endl;
+    //     pj::CallOpParam param(false);
+    //     call.answer(param);
+    //     std::cout << "<---" << __FUNCTION__ << std::endl;
+    // }
 
 private:
     pj::Endpoint ep;
     pj::Account acc;
-    std::unique_ptr<pj::Call> call;
+    std::unique_ptr<voip::VCall> call;
 };
 
 int main() {
