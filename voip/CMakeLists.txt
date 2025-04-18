@@ -13,7 +13,12 @@ link_directories(/usr/local/lib)
 add_executable(voip 
     # voip.cpp 
     # vcall.cc
-    main.cc
+    # main.cc
+    # test/main.cc
+    vaudiomediaport.cc
+    vaccount.cc
+    vcall.cc
+    voip.cc
 )
 
 target_link_libraries(voip

@@ -1,15 +1,21 @@
 #include "vcall.h"
 #include "vaccount.h"
-#include <iostream>
+#include "vaudiomediaport.h"
 
-voip::VCall(voip::VAccount &acc, int call_id)
+#include <pjsua2/call.hpp>
+#include <iostream>
+#include <fstream>
+
+voip::VCall::VCall(voip::VAccount &acc, int call_id) :
+    Call(acc, call_id),
+    acc_(acc)
 {
 }
 
 voip::VCall::~VCall()
 {
-    if (myAcc.currentCall == this) {
-        myAcc.currentCall = nullptr;
+    if (acc_.cur_call == this) {
+        acc_.cur_call = nullptr;
         std::cout << "--- Call object destroyed, account call pointer cleared." << std::endl;
     }
     else {
@@ -30,49 +36,61 @@ void voip::VCall::onCallState(pj::OnCallStateParam &prm)
 
         if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
             std::cout << "--- Call " << ci.id << " Disconnected." << std::endl;
-            if (myAcc.currentCall == this) {
-                myAcc.currentCall = nullptr; // Signal that the call is over
+            if (acc_.cur_call == this) {
+                acc_.cur_call = nullptr;
                 std::cout << "--- Account's active call pointer cleared due to DISCONNECTED state." << std::endl;
-                // Deletion is handled by main loop or unique_ptr management now
             }
         }
         else if (ci.state == PJSIP_INV_STATE_CONFIRMED) {
             std::cout << "--- Call " << ci.id << " Connected/Confirmed." << std::endl;
         }
     }
-    catch (const Error &err) {
+    catch (const pj::Error &err) {
         std::cerr << "!!! Error getting call info in onCallState: " << err.info() << std::endl;
     }
 }
 
-void voip::MyCall::onCallMediaState(OnCallMediaStateParam &prm)
+void voip::VCall::onCallMediaState(pj::OnCallMediaStateParam &prm)
 {
     PJ_UNUSED_ARG(prm);
     try {
-        CallInfo ci = getInfo();
+        pj::CallInfo ci = getInfo();
         std::cout << "*** Call " << ci.id << " Media State Changed" << std::endl;
+
+        voip::VRecvAudioMediaPort *recv_aud_med = new voip::VRecvAudioMediaPort {};
+        voip::VSendAudioMediaPort *send_aud_med = new voip::VSendAudioMediaPort {};
+        pj::MediaFormatAudio med_for_aud;
+
+        // med_for_aud.init(PJMEDIA_FORMAT_PCM, 8000, 1, 20, 16);
+        // recv_aud_med->createPort("recv", med_for_aud);
+        // send_aud_med->createPort("send", med_for_aud);
+
+        pj::AudDevManager &mgr = pj::Endpoint::instance().audDevManager();
+        auto cap_dev_med = mgr.getCaptureDevMedia();
+        auto play_dev_med = mgr.getPlaybackDevMedia();
 
         for (unsigned i = 0; i < ci.media.size(); ++i) {
             if (ci.media[i].type == PJMEDIA_TYPE_AUDIO && getMedia(i)) {
-                AudioMedia *aud_med = static_cast<AudioMedia *>(getMedia(i));
-                AudDevManager &mgr = Endpoint::instance().audDevManager();
+                pj::AudioMedia aud_med = getAudioMedia(i);
 
                 if (ci.media[i].status == PJSUA_CALL_MEDIA_ACTIVE) {
                     std::cout << "--- Audio media is ACTIVE for call " << ci.id << ". Connecting to sound device." << std::endl;
                     try {
-                        mgr.getCaptureDevMedia().startTransmit(*aud_med);
-                        aud_med->startTransmit(mgr.getPlaybackDevMedia());
+                        cap_dev_med.startTransmit(aud_med);
+                        aud_med.startTransmit(play_dev_med);
+
+                        // recv_aud_med->startTransmit(*send_aud_med);
+                        // send_aud_med->startTransmit(play_dev_med);
+
+                        // play_dev_med.startTransmit(*recv_aud_med);
+                        // aud_med.startTransmit(*recv_aud_med);
+                        // recv_aud_med->startTransmit(aud_med);
+
                         std::cout << "--- Audio connected for call " << ci.id << std::endl;
                     }
-                    catch (Error &err) {
+                    catch (pj::Error &err) {
                         std::cerr << "!!! Failed to connect audio for call " << ci.id << ": " << err.info() << std::endl;
                     }
-                }
-                else {
-                    std::cout << "--- Audio media is NOT ACTIVE (status: " << ci.media[i].status << ") for call " << ci.id << "." << std::endl;
-                    // Optional: Stop transmission explicitly if needed, though PJSIP often handles it.
-                    // try { mgr.getCaptureDevMedia().stopTransmit(*aud_med); } catch(...) {}
-                    // try { aud_med->stopTransmit(mgr.getPlaybackDevMedia()); } catch(...) {}
                 }
             }
             else if (ci.media[i].type != PJMEDIA_TYPE_AUDIO) {
@@ -80,7 +98,17 @@ void voip::MyCall::onCallMediaState(OnCallMediaStateParam &prm)
             }
         }
     }
-    catch (const Error &err) {
+    catch (const pj::Error &err) {
         std::cerr << "!!! Error in onCallMediaState: " << err.info() << std::endl;
     }
 }
+
+// void voip::VCall::onStreamCreated(pj::OnStreamCreatedParam &prm)
+// {
+//     this->onStreamCreated(prm);
+//     std::ofstream out_file("stream", std::ios::binary | std::ios::app);
+//     if (out_file.is_open()) {
+//         out_file.write(reinterpret_cast<const char *>(prm.stream), sizeof(prm.stream));
+//         out_file.close();
+//     }
+// }

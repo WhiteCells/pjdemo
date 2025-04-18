@@ -3,23 +3,22 @@
 
 #include <pjsua2.hpp>
 
-class VAccount;
-
 namespace voip {
+
+class VAccount;
 
 class VCall : public pj::Call
 {
-
 public:
-    VCall(VAccount &acc, int call_id);
+    VCall(VAccount &acc, int call_id = PJSUA_INVALID_ID);
     ~VCall();
 
-    virtual void onCallState(pj::OnCallStateParam &prm);
-    virtual void onCallMediaState(pj::OnCallMediaStateParam &prm);
-    // virtual void onDtmfDigit(OnDtmfDigitParam &prm); // Optional DTMF
+    virtual void onCallState(pj::OnCallStateParam &prm) override;
+    virtual void onCallMediaState(pj::OnCallMediaStateParam &prm) override;
+    // virtual void onStreamCreated(pj::OnStreamCreatedParam &prm) override;
 
 private:
-    VAccount &myAcc;
+    VAccount &acc_;
 };
 
 } // namespace voip

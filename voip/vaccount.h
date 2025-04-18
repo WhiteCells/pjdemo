@@ -1,14 +1,12 @@
-#include "vcall.h"
-
 #include <pjsua2.hpp>
 
 namespace voip {
 
+class VCall;
+
 class VAccount : public pj::Account
 {
 public:
-    VCall *currentCall = nullptr;
-
     VAccount();
 
     ~VAccount();
@@ -16,6 +14,8 @@ public:
     virtual void onRegState(pj::OnRegStateParam &prm) override;
 
     virtual void onIncomingCall(pj::OnIncomingCallParam &iprm) override;
+
+    VCall *cur_call = nullptr;
 };
 
 } // namespace voip

@@ -1,5 +1,8 @@
+#include "vaudiomediaport.h"
+
 #include <pjsua2.hpp>
 #include <iostream>
+#include <pjsua2/media.hpp>
 #include <string>
 #include <memory>
 #include <limits>
@@ -26,6 +29,10 @@ public:
 
     virtual void onCallState(OnCallStateParam &prm);
     virtual void onCallMediaState(OnCallMediaStateParam &prm);
+
+private:
+    std::unique_ptr<voip::VRecvAudioMediaPort> recv_aud_med_port_;
+    std::unique_ptr<voip::VSendAudioMediaPort> send_aud_med_port_;
 };
 
 class MyAccount : public Account
@@ -147,8 +154,25 @@ void MyCall::onCallMediaState(OnCallMediaStateParam &prm)
                 if (ci.media[i].status == PJSUA_CALL_MEDIA_ACTIVE) {
                     std::cout << "--- Audio media is ACTIVE for call " << ci.id << ". Connecting to sound device." << std::endl;
                     try {
+                        /* * */
+                        recv_aud_med_port_ = std::make_unique<voip::VRecvAudioMediaPort>();
+                        // 输出
+                        aud_med->startTransmit(*recv_aud_med_port_);
+                        // 输入
+                        send_aud_med_port_ = std::make_unique<voip::VSendAudioMediaPort>();
+                        send_aud_med_port_->startTransmit(mgr.getCaptureDevMedia());
+                        /* * */
+
+                        /* * */
+                        // 输入
+                        // 将捕获设备捕获的数据传输给 aud_med
+                        // startTransmit2 带有传输时的参数
                         mgr.getCaptureDevMedia().startTransmit(*aud_med);
+                        // 输出
+                        // 将 aud_med 收到的数据传输给 PlaybackDevMedia
                         aud_med->startTransmit(mgr.getPlaybackDevMedia());
+                        /* * */
+
                         std::cout << "--- Audio connected for call " << ci.id << std::endl;
                     }
                     catch (Error &err) {
@@ -158,9 +182,6 @@ void MyCall::onCallMediaState(OnCallMediaStateParam &prm)
                 else {
                     std::cout << "--- Audio media is NOT ACTIVE (status: " << ci.media[i].status << ") for call " << ci.id << "." << std::endl;
                 }
-            }
-            else if (ci.media[i].type != PJMEDIA_TYPE_AUDIO) {
-                std::cout << "--- Non-audio media stream detected (type: " << ci.media[i].type << ")" << std::endl;
             }
         }
     }
