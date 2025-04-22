@@ -13,8 +13,13 @@ public:
     VCall(VAccount &acc, int call_id = PJSUA_INVALID_ID);
     ~VCall();
 
-    virtual void onCallState(pj::OnCallStateParam &prm) override;
-    virtual void onCallMediaState(pj::OnCallMediaStateParam &prm) override;
+    // 呼叫状态改变
+    virtual void
+    onCallState(pj::OnCallStateParam &prm) override;
+
+    // 呼叫状态改变
+    virtual void
+    onCallMediaState(pj::OnCallMediaStateParam &prm) override;
     // virtual void onStreamCreated(pj::OnStreamCreatedParam &prm) override;
 
 private:

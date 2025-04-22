@@ -17,7 +17,7 @@ int main()
     std::unique_ptr<voip::VAccount> acc;
 
     try {
-        std::cout << "Initializing Endpoint..." << std::endl;
+        std::cout << "initializing Endpoint" << std::endl;
         ep.libCreate();
         pj::EpConfig ep_cfg;
         ep.libInit(ep_cfg);
@@ -32,16 +32,16 @@ int main()
         try {
             pj::AudDevManager &mgr = ep.audDevManager();
             if (mgr.getDevCount() > 0) {
-                std::cout << "--- Default capture device: " << mgr.getCaptureDev() << std::endl;
-                std::cout << "--- Default playback device: " << mgr.getPlaybackDev() << std::endl;
+                std::cout << ">>> default capture device: " << mgr.getCaptureDev() << std::endl;
+                std::cout << ">>> default playback device: " << mgr.getPlaybackDev() << std::endl;
             }
             else {
-                std::cout << "!!! No audio devices found. Using NULL audio device." << std::endl;
+                std::cout << ">>> no audio devices found. Using NULL audio device" << std::endl;
                 ep.audDevManager().setNullDev();
             }
         }
         catch (const pj::Error &err) {
-            std::cerr << "!!! Error setting audio devices: " << err.info() << std::endl;
+            std::cerr << ">>> error setting audio devices: " << err.info() << std::endl;
             try {
                 ep.audDevManager().setNullDev();
             }
@@ -60,10 +60,9 @@ int main()
         std::cout << "*** Account created for " << acc_cfg.idUri << ". Registering..." << std::endl;
 
         std::cout << "\nCommands:\n";
-        std::cout << "  m <sip:user@domain>  : Make call\n";
-        std::cout << "  h                    : Hangup call\n";
-        std::cout << "  q                    : Quit\n"
-                  << std::endl;
+        std::cout << "  m <sip:user@domain>  : 拨号\n";
+        std::cout << "  h                    : 挂断\n";
+        std::cout << "  q                    : 退出\n\n";
 
         char cmd[100];
         while (true) {
@@ -73,7 +72,7 @@ int main()
                     break;
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cerr << "!!! Input error. Please try again." << std::endl;
+                std::cerr << ">>> input error. please try again" << std::endl;
                 continue;
             }
 
@@ -88,15 +87,15 @@ int main()
             }
             else if (action == 'm') {
                 if (acc->cur_call) {
-                    std::cerr << "!!! Cannot make a new call. A call is already active." << std::endl;
+                    std::cerr << ">>> cannot make a new call. A call is already active." << std::endl;
                     continue;
                 }
                 if (command_line.length() < 3 || command_line[1] != ' ') {
-                    std::cerr << "!!! Invalid format. Use: m <sip:user@domain>" << std::endl;
+                    std::cerr << ">>> invalid format. Use: m <sip:user@domain>" << std::endl;
                     continue;
                 }
                 std::string target_uri = command_line.substr(2);
-                std::cout << ">>> Placing call to: " << target_uri << std::endl;
+                std::cout << ">>> placing call to: " << target_uri << std::endl;
 
                 voip::VCall *call = new voip::VCall(*acc);
                 pj::CallOpParam prm(true);
@@ -106,47 +105,47 @@ int main()
                     acc->cur_call = call;
                 }
                 catch (const pj::Error &err) {
-                    std::cerr << "!!! Failed to make call: " << err.info() << std::endl;
+                    std::cerr << ">>> failed to make call: " << err.info() << std::endl;
                     delete call;
                 }
             }
             else if (action == 'h') {
                 if (!acc->cur_call) {
-                    std::cerr << "!!! No active call to hang up." << std::endl;
+                    std::cerr << ">>> no active call to hang up" << std::endl;
                     continue;
                 }
-                std::cout << ">>> Hanging up call..." << std::endl;
+                std::cout << ">>> hanging up call" << std::endl;
                 pj::CallOpParam prm;
                 try {
                     acc->cur_call->hangup(prm);
                 }
                 catch (const pj::Error &err) {
-                    std::cerr << "!!! Failed to hang up call: " << err.info() << std::endl;
+                    std::cerr << ">>> failed to hang up call: " << err.info() << std::endl;
                 }
             }
             else {
-                std::cerr << "!!! Unknown command: " << action << std::endl;
+                std::cerr << ">>> unknown command: " << action << std::endl;
             }
 
             if (acc->cur_call) {
                 try {
                     pj::CallInfo ci = acc->cur_call->getInfo();
                     if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
-                        std::cout << "--- Detected disconnected call in main loop, attempting cleanup." << std::endl;
+                        std::cout << ">>> detected disconnected call in main loop, attempting cleanup." << std::endl;
                         delete acc->cur_call;
                         acc->cur_call = nullptr;
                     }
                 }
                 catch (const pj::Error &err) {
-                    std::cerr << "--- Error checking call state in main loop (might be already deleted): " << err.info() << std::endl;
+                    std::cerr << ">>> error checking call state in main loop (might be already deleted): " << err.info() << std::endl;
                     acc->cur_call = nullptr;
                 }
             }
         }
 
-        std::cout << "Shutting down..." << std::endl;
+        std::cout << "shutting down" << std::endl;
         if (acc->cur_call) {
-            std::cout << "--- Hanging up active call before exit..." << std::endl;
+            std::cout << ">>> hanging up active call before exit..." << std::endl;
             pj::CallOpParam prm;
             try {
                 acc->cur_call->hangup(prm);

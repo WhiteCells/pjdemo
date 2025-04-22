@@ -14,7 +14,9 @@ add_executable(voip
     # voip.cpp 
     # vcall.cc
     # main.cc
+    # test/offical.cc
     # test/main.cc
+    # test/test_audiomediaport.cc
     vaudiomediaport.cc
     vaccount.cc
     vcall.cc

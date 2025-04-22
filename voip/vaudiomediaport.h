@@ -19,31 +19,31 @@ public:
     onFrameReceived(pj::MediaFrame &frame) override;
 };
 
-class VRecvAudioMediaPort : public VAudioMediaPort
-{
-public:
-    VRecvAudioMediaPort();
-    ~VRecvAudioMediaPort();
+// class VRecvAudioMediaPort : public VAudioMediaPort
+// {
+// public:
+//     VRecvAudioMediaPort();
+//     ~VRecvAudioMediaPort();
 
-    virtual void
-    onFrameRequested(pj::MediaFrame &frame) override;
+//     virtual void
+//     onFrameRequested(pj::MediaFrame &frame) override;
 
-    virtual void
-    onFrameReceived(pj::MediaFrame &frame) override;
-};
+//     virtual void
+//     onFrameReceived(pj::MediaFrame &frame) override;
+// };
 
-class VSendAudioMediaPort : public VAudioMediaPort
-{
-public:
-    VSendAudioMediaPort();
-    ~VSendAudioMediaPort();
+// class VSendAudioMediaPort : public VAudioMediaPort
+// {
+// public:
+//     VSendAudioMediaPort();
+//     ~VSendAudioMediaPort();
 
-    virtual void
-    onFrameRequested(pj::MediaFrame &frame) override;
+//     virtual void
+//     onFrameRequested(pj::MediaFrame &frame) override;
 
-    virtual void
-    onFrameReceived(pj::MediaFrame &frame) override;
-};
+//     virtual void
+//     onFrameReceived(pj::MediaFrame &frame) override;
+// };
 
 } // namespace voip
 

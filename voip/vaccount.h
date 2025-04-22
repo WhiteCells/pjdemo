@@ -11,9 +11,13 @@ public:
 
     ~VAccount();
 
-    virtual void onRegState(pj::OnRegStateParam &prm) override;
+    // 注册状态改变
+    virtual void
+    onRegState(pj::OnRegStateParam &prm) override;
 
-    virtual void onIncomingCall(pj::OnIncomingCallParam &iprm) override;
+    // 呼入
+    virtual void
+    onIncomingCall(pj::OnIncomingCallParam &iprm) override;
 
     VCall *cur_call = nullptr;
 };
